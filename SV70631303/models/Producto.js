@@ -5,6 +5,10 @@ const productoSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  categoria: {
+    type: String,
+    required: true
+  },
   descripcion: {
     type: String,
     required: true
@@ -14,17 +18,13 @@ const productoSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
-  marca: {
+  tamanio: {
     type: String,
     required: true
   },
   imagen: {
     type: String,
     default: 'default-product.jpg'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   },
   stock: {
     type: Number

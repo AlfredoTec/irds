@@ -56,14 +56,15 @@ const productosController = {
   // Crear nuevo producto
   createProduct: async (req, res) => {
     try {
-      const { nombre, descripcion, precio, marca, stock } = req.body;
+      const { nombre, categoria, descripcion, precio, tamanio, stock } = req.body;
       const imagen = req.file ? req.file.filename : 'default-product.jpg';
       
       const nuevoProducto = new Producto({
         nombre,
+        categoria,
         descripcion,
         precio,
-        marca,
+        tamanio,
         imagen,
         stock
       });

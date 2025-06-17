@@ -39,7 +39,7 @@ const agregarProducto = async (req, res) => {
   }
 
   // 2. Validación de datos de entrada
-  const { productoId, cantidad } = req.body;
+  const { productoId, cantidad, tamanio } = req.body;
   if (!productoId || !cantidad) {
     console.error('Datos incompletos:', { productoId, cantidad });
     req.flash('error_msg', 'Datos del producto incompletos');
@@ -98,11 +98,17 @@ const agregarProducto = async (req, res) => {
       });
     } else {
       // Producto nuevo en el carrito - agregar item
-      carrito.items.push({
+      const nuevoItem = {
         producto: productoId,
         cantidad: cantidadNum,
         precioUnitario: producto.precio // Guardar precio actual como referencia
-      });
+      };
+
+      // Solo agregar tamaño si es una bebida
+      if(producto.categoria == 'Bebidas' && tamanio){
+        nuevoItem.tamaio = tamanio;
+      }
+      carrito.items.push(nuevoItem);
       console.log('Agregando nuevo producto al carrito:', producto.nombre);
     }
 
@@ -236,7 +242,10 @@ const mostrarOrdenConfirmada = async (req, res) => {
 const crearOrden = async (req, res) => {
   try {
     const carritoId = req.params.id;
-    const { metodoDePago } = req.body;
+    const { metodoDePago, direccion,
+      referencia, departamento,
+      ciudad, codigoPostal, telefono } = req.body;
+
     const usuarioId = req.session.user.id;
 
     const carrito = await Carrito.findById(carritoId).populate('items.producto');
@@ -261,11 +270,21 @@ const crearOrden = async (req, res) => {
 
     const total = itemsParaOrden.reduce((sum, item) => sum + item.subtotal, 0);
 
+    const direccionEnvio = {
+      direccion,
+      ciudad,
+      departamento,
+      codigoPostal: codigoPostal,
+      referencia: referencia || '',
+      telefono
+    };
+
     const orden = new Orden({
       usuarioId,
       items: itemsParaOrden,
       total,
       metodoDePago,
+      direccionEnvio,
       status: 'pendiente'
     });
 
@@ -276,6 +295,7 @@ const crearOrden = async (req, res) => {
     }));
 
     await orden.save();
+
     carrito.items = [];
     await carrito.save();
 

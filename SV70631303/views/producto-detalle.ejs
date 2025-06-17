@@ -53,7 +53,7 @@
       </div>
       <div class="col-md-6">
         <h1><%= producto.nombre %></h1>
-        <p class="text-muted">Marca: <%= producto.marca %></p>
+        <p class="text-muted">Categoria: <%= producto.categoria %></p>
         <h3 class="text-primary">S/. <%= producto.precio.toFixed(2) %></h3>
         <hr>
         <h4>Descripción</h4>
@@ -74,6 +74,19 @@
 
         <!-- Formulario para agregar al carrito -->
         <form action="/carrito/agregar" method="POST">
+          <% if (producto.categoria === 'Bebidas') { %>
+            <div class="mb-3">
+              <label for="tamanio" class="form-label">Tamaño:</label>
+              <select class="form-select" id="tamanio" name="tamanio" required>
+                <option value="pequeno">Pequeño</option>
+                <option value="mediano" selected>Mediano</option>
+                <option value="grande">Grande</option>
+              </select>
+            </div>
+          <% } else { %>
+            <input type="hidden" name="tamanio" value="unico">
+          <% } %>
+
           <input type="hidden" name="productoId" value="<%= producto._id %>">
           <div class="mb-4">
             <label for="quantity" class="form-label">Cantidad:</label>

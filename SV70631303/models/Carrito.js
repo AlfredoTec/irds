@@ -10,6 +10,15 @@ const itemSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 1
+  },
+  tamanio: {
+    type: String,
+    enum: ['pequeno', 'mediano', 'grande', 'unico'],
+    default: 'unico'
+  },
+  precioUnitario: {
+    type: Number,
+    required: true
   }
 });
 
