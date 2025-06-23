@@ -4,83 +4,41 @@
   <%- include('partials/header') %>
   <title>Tu carrito</title>
   <style>
-    .product-img {
-      max-height: 120px;
-      object-fit: contain;
-    }
-    .quantity-input {
-      width: 60px;
-      text-align: center;
-    }
-    
-    /* Estilos mejorados para los botones */
-    .btn-update {
+    .size-badge {
       background-color: #4e73df;
       color: white;
-      border: none;
-      border-radius: 0 4px 4px 0;
-      transition: all 0.3s ease;
-      padding: 8px 12px;
+      padding: 3px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      margin-left: 5px;
+      display: inline-block;
+      font-weight: 500;
     }
-    
-    .btn-update:hover {
-      background-color: #2e59d9;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    .price-display {
+      font-size: 1.1rem;
+      color: #2e59d9;
+      font-weight: 600;
     }
-    
-    .btn-delete {
-      background-color: #e74a3b;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      transition: all 0.3s ease;
-      padding: 8px 16px;
+    .product-title {
       display: flex;
       align-items: center;
-      justify-content: center;
+      flex-wrap: wrap;
     }
-    
-    .btn-delete:hover {
-      background-color: #d62c1a;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    .btn-update {
+      color: #4e73df;
+      background-color: #f8f9fc;
+      border-color: #d1d3e2;
     }
-    
-    .btn-delete i, .btn-update i {
-      margin-right: 5px;
+    .btn-delete {
+      color: #e74a3b;
+      background-color: #f8f9fc;
+      border-color: #d1d3e2;
     }
-    
-    .input-group {
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      border-radius: 4px;
-    }
-    
-    .quantity-input {
-      border: 1px solid #d1d3e2;
-      border-right: none;
-      padding: 8px;
-    }
-    
-    .quantity-input:focus {
-      box-shadow: none;
-      border-color: #bac8f3;
-    }
-    
     .btn-checkout {
-      background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-      border: none;
-      transition: all 0.3s ease;
+      background-color: #2e59d9;
       font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    
-    .btn-checkout:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(78, 115, 223, 0.4);
     }
   </style>
-  <!-- Agregamos Font Awesome para los íconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -105,33 +63,63 @@
                   <div class="col-md-2">
                     <img src="/uploads/<%= item.producto.imagen || 'default-product.jpg' %>" 
                          alt="<%= item.producto.nombre %>" 
-                         class="img-fluid product-img rounded"
+                         class="img-fluid rounded"
+                         style="max-height: 100px; object-fit: cover;"
                          onerror="this.onerror=null;this.src='/uploads/default-product.jpg'">
                   </div>
                   <div class="col-md-4">
-                    <h5><%= item.producto.nombre %></h5>
-                    <p class="text-muted small"><%= item.producto.descripcion %></p>
-                  </div>
-                  <div class="col-md-2">
-                    <div class="d-flex flex-column">
-                      <span class="text-muted small">Precio unitario</span>
-                      <span class="fw-bold">S/. <%= item.producto.precio.toFixed(2) %></span>
+                    <div class="product-title">
+                      <h5><%= item.producto.nombre %></h5>
+                      <% if (item.tamanio && item.tamanio !== 'unico') { %>
+                        <span class="size-badge ms-2">
+                          <%= item.tamanio === 'pequeno' ? 'Pequeño' : 
+                              item.tamanio === 'mediano' ? 'Mediano' : 
+                              'Grande' %>
+                        </span>
+                      <% } %>
+                    </div>
+                    <p class="text-muted small mb-2"><%= item.producto.descripcion %></p>
+                    <div class="price-display">
+                      <% if (item.producto.categoria === 'Bebidas' && item.tamanio && item.producto.precios) { %>
+                        <span>S/. <%= item.producto.precios[item.tamanio].toFixed(2) %></span>
+                        <small class="text-muted ms-2">(Precio <%= item.tamanio === 'pequeno' ? 'pequeño' : 
+                                              item.tamanio === 'mediano' ? 'mediano' : 
+                                              'grande' %>)</small>
+                      <% } else { %>
+                        <span>S/. <%= item.producto.precio.toFixed(2) %></span>
+                      <% } %>
                     </div>
                   </div>
                   <div class="col-md-2">
-                    <form action="/carrito/actualizar/<%= item._id %>" method="POST" class="mb-2">
-                      <div class="input-group">
-                        <input type="number" 
-                              name="cantidad" 
-                              value="<%= item.cantidad %>" 
-                              min="1" 
-                              max="<%= item.producto.stock %>"
-                              class="form-control quantity-input">
-                        <button type="submit" class="btn btn-update">
-                          <i class="fas fa-sync-alt"></i>
-                        </button>
-                      </div>
-                    </form>
+                    <div class="d-flex flex-column">
+                      <span class="text-muted small">Cantidad</span>
+                      <form action="/carrito/actualizar/<%= item._id %>" method="POST" class="mb-2">
+                        <div class="input-group">
+                          <input type="number" 
+                                name="cantidad" 
+                                value="<%= item.cantidad %>" 
+                                min="1" 
+                                max="<%= item.producto.stock %>"
+                                class="form-control quantity-input">
+                          <button type="submit" class="btn btn-update">
+                            <i class="fas fa-sync-alt"></i>
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="d-flex flex-column">
+                      <span class="text-muted small">Subtotal</span>
+                      <span class="fw-bold">
+                        S/. 
+                        <% if (item.producto.categoria === 'Bebidas' && item.tamanio && item.producto.precios) { %>
+                          <%= (item.producto.precios[item.tamanio] * item.cantidad).toFixed(2) %>
+                        <% } else { %>
+                          <%= (item.producto.precio * item.cantidad).toFixed(2) %>
+                        <% } %>
+                      </span>
+                    </div>
                   </div>
                   <div class="col-md-2">
                     <form action="/carrito/eliminar/<%= item._id %>" method="POST">

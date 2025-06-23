@@ -25,7 +25,7 @@ const itemSchema = new mongoose.Schema({
 const carritoSchema = new mongoose.Schema({
   usuarioId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario', // Asumiendo que tienes un modelo de Usuario
+    ref: 'User', // Asumiendo que tienes un modelo de Usuario
     required: true,
     unique: true
   },

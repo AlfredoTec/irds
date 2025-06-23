@@ -12,6 +12,7 @@ module.exports = () => {
   router.get('/checkout', isAuthenticated, carritoController.mostrarCheckout);
   router.get('/orden-confirmada/:id', isAuthenticated, carritoController.mostrarOrdenConfirmada);
   router.post('/:id/orden', isAuthenticated, carritoController.crearOrden);
+  router.post('/orden/cancelar/:id', isAuthenticated, carritoController.cancelarOrden);
   router.get('/mis-ordenes', isAuthenticated, carritoController.mostrarOrdenes);
 
   return router;

@@ -39,6 +39,25 @@
       border-color: #0d6efd;
       background-color: #f8f9fa;
     }
+    .product-img-checkout {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    .size-badge {
+      background-color: #4e73df;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      margin-left: 5px;
+    }
+    .quantity-input {
+      width: 60px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -58,16 +77,15 @@
           <!-- Sección de dirección -->
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white border-bottom py-3">
-              <h2 class="h5 mb-0"><i class="bi bi-truck me-2"></i>Dirección de envío</h2>
+              <h2 class="h5 mb-0"><i class="bi bi-geo-alt me-2"></i>Dirección de envío</h2>
             </div>
             <div class="card-body">
               <div class="mb-4">
-                
                 <!-- Formulario de dirección -->
                 <div id="nueva-direccion-form" class="p-3 border rounded-3 bg-light">
                   <div class="row g-3">
                     <div class="col-md-6">
-                      <label for="direccion" class="form-label">Dirección</label>
+                      <label for="direccion" class="form-label">Dirección *</label>
                       <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Av. Ejemplo 123" required>
                       <div class="invalid-feedback">Por favor ingresa tu dirección</div>
                     </div>
@@ -76,7 +94,7 @@
                       <input type="text" class="form-control" id="referencia" name="referencia" placeholder="Cerca al parque...">
                     </div>
                     <div class="col-md-4">
-                      <label for="departamento" class="form-label">Departamento</label>
+                      <label for="departamento" class="form-label">Departamento *</label>
                       <select class="form-select" id="departamento" name="departamento" required>
                         <option value="" selected disabled>Seleccionar...</option>
                         <option value="Lima">Lima</option>
@@ -93,17 +111,17 @@
                       <div class="invalid-feedback">Selecciona un departamento</div>
                     </div>
                     <div class="col-md-4">
-                      <label for="ciudad" class="form-label">Ciudad</label>
+                      <label for="ciudad" class="form-label">Ciudad *</label>
                       <input type="text" class="form-control" id="ciudad" name="ciudad" required>
                       <div class="invalid-feedback">Por favor ingresa tu ciudad</div>
                     </div>
                     <div class="col-md-4">
-                      <label for="codigoPostal" class="form-label">Código Postal</label>
+                      <label for="codigoPostal" class="form-label">Código Postal *</label>
                       <input type="text" class="form-control" id="codigoPostal" name="codigoPostal" required>
                       <div class="invalid-feedback">Por favor ingresa tu código postal</div>
                     </div>
                     <div class="col-md-6">
-                      <label for="telefono" class="form-label">Teléfono de contacto</label>
+                      <label for="telefono" class="form-label">Teléfono de contacto *</label>
                       <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="987654321" required>
                       <div class="invalid-feedback">Por favor ingresa tu teléfono</div>
                     </div>
@@ -156,20 +174,20 @@
                 <h5 class="mb-3"><i class="bi bi-credit-card me-2"></i>Datos de tarjeta</h5>
                 <div class="row g-3">
                   <div class="col-md-6">
-                    <label for="card-number" class="form-label">Número de tarjeta</label>
+                    <label for="card-number" class="form-label">Número de tarjeta *</label>
                     <div class="input-group">
-                      <input type="text" class="form-control" id="card-number" placeholder="1234 5678 9012 3456">
+                      <input type="text" class="form-control" id="card-number" placeholder="1234 5678 9012 3456" required>
                       <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
                     </div>
                     <div class="invalid-feedback">Ingrese un número de tarjeta válido (16 dígitos)</div>
                   </div>
                   <div class="col-md-3">
-                    <label for="card-expiry" class="form-label">Fecha exp.</label>
+                    <label for="card-expiry" class="form-label">Fecha exp. *</label>
                     <input type="text" class="form-control" id="card-expiry" placeholder="MM/AA" required pattern="(0[1-9]|1[0-2])\/[0-9]{2}">
                     <div class="invalid-feedback">Formato MM/AA</div>
                   </div>
                   <div class="col-md-3">
-                    <label for="card-cvc" class="form-label">CVC</label>
+                    <label for="card-cvc" class="form-label">CVC *</label>
                     <div class="input-group">
                       <input type="text" class="form-control" id="card-cvc" placeholder="123" required pattern="\d{3,4}">
                       <span class="input-group-text" data-bs-toggle="tooltip" title="Los 3 dígitos en el reverso de tu tarjeta">
@@ -179,7 +197,7 @@
                     <div class="invalid-feedback">Ingrese el código de seguridad</div>
                   </div>
                   <div class="col-12">
-                    <label for="card-name" class="form-label">Nombre en la tarjeta</label>
+                    <label for="card-name" class="form-label">Nombre en la tarjeta *</label>
                     <input type="text" class="form-control" id="card-name" placeholder="JUAN PEREZ" required>
                     <div class="invalid-feedback">Ingrese el nombre como aparece en la tarjeta</div>
                   </div>
@@ -193,7 +211,7 @@
                   <div>Serás redirigido a PayPal para completar tu pago</div>
                 </div>
                 <div class="mb-3">
-                  <label for="paypal-email" class="form-label">Correo electrónico de PayPal</label>
+                  <label for="paypal-email" class="form-label">Correo electrónico de PayPal *</label>
                   <input type="email" class="form-control" id="paypal-email" placeholder="tucorreo@example.com" disabled required>
                   <div class="invalid-feedback">Ingrese su correo de PayPal</div>
                 </div>
@@ -260,7 +278,7 @@
                 </div>
                 
                 <div class="mb-3">
-                  <label for="transferencia-fecha" class="form-label">Fecha de transferencia</label>
+                  <label for="transferencia-fecha" class="form-label">Fecha de transferencia *</label>
                   <input type="date" class="form-control" id="transferencia-fecha" disabled required>
                   <div class="invalid-feedback">Seleccione la fecha de transferencia</div>
                 </div>
@@ -279,7 +297,7 @@
       <div class="col-lg-4">
         <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
           <div class="card-header bg-white border-bottom py-3">
-            <h2 class="h5 mb-0"><i class="bi bi-cart-check me-2"></i>Resumen</h2>
+            <h2 class="h5 mb-0"><i class="bi bi-cart-check me-2"></i>Resumen del pedido</h2>
           </div>
           <div class="card-body">
             <div class="list-group list-group-flush mb-3">
@@ -287,12 +305,40 @@
                 <div class="list-group-item border-0 px-0 py-2">
                   <div class="d-flex justify-content-between">
                     <div class="d-flex">
+                      <img src="/uploads/<%= item.producto.imagen || 'default-product.jpg' %>" 
+                           alt="<%= item.producto.nombre %>" 
+                           class="product-img-checkout me-3"
+                           onerror="this.onerror=null;this.src='/uploads/default-product.jpg'">
                       <div>
                         <h6 class="mb-1"><%= item.producto.nombre %></h6>
-                        <small class="text-muted"><%= item.cantidad %> x S/ <%= item.producto.precio.toFixed(2) %></small>
+                        <% if (item.tamanio && item.tamanio !== 'unico') { %>
+                          <small class="text-muted">
+                            Tamaño: 
+                            <span class="size-badge">
+                              <%= item.tamanio === 'pequeno' ? 'Pequeño' : 
+                                  item.tamanio === 'mediano' ? 'Mediano' : 
+                                  'Grande' %>
+                            </span>
+                          </small>
+                        <% } %>
                       </div>
                     </div>
-                    <span class="fw-medium">S/ <%= (item.producto.precio * item.cantidad).toFixed(2) %></span>
+                    <div class="text-end">
+                      <span class="fw-medium">S/ 
+                        <% if (item.producto.categoria === 'Bebidas' && item.tamanio && item.producto.precios) { %>
+                          <%= (item.producto.precios[item.tamanio] * item.cantidad).toFixed(2) %>
+                        <% } else { %>
+                          <%= (item.producto.precio * item.cantidad).toFixed(2) %>
+                        <% } %>
+                      </span>
+                      <div class="small text-muted"><%= item.cantidad %> x S/ 
+                        <% if (item.producto.categoria === 'Bebidas' && item.tamanio && item.producto.precios) { %>
+                          <%= item.producto.precios[item.tamanio].toFixed(2) %>
+                        <% } else { %>
+                          <%= item.producto.precio.toFixed(2) %>
+                        <% } %>
+                      </div>
+                    </div>
                   </div>
                 </div>
               <% }); %>
@@ -355,29 +401,19 @@
   <%- include('partials/footer') %>
 
   <script>
-    // Inicialización de tooltips
     document.addEventListener('DOMContentLoaded', function() {
-      // Activar tooltips
-      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-      tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-      });
+      // Inicialización de tooltips
+      [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        .map(el => new bootstrap.Tooltip(el));
 
       // Selección de método de pago con cards
       const paymentCards = document.querySelectorAll('.payment-method-card');
       paymentCards.forEach(card => {
         card.addEventListener('click', function() {
-          // Remover clase selected de todas las cards
           paymentCards.forEach(c => c.classList.remove('selected'));
-          
-          // Agregar clase selected a la card clickeada
           this.classList.add('selected');
-          
-          // Marcar el radio button correspondiente
           const method = this.dataset.method;
           document.getElementById(method).checked = true;
-          
-          // Disparar evento change
           document.getElementById(method).dispatchEvent(new Event('change'));
         });
       });
@@ -385,28 +421,20 @@
       // Mostrar/ocultar secciones según método de pago
       document.querySelectorAll('input[name="metodoDePago"]').forEach(radio => {
         radio.addEventListener('change', function() {
-          const sections = {
-            'tarjeta': document.getElementById('tarjeta-data'),
-            'paypal': document.getElementById('paypal-data'),
-            'transferencia': document.getElementById('transferencia-data')
-          };
-          
-          // Ocultar todas las secciones primero
-          Object.values(sections).forEach(section => {
+          ['tarjeta', 'paypal', 'transferencia'].forEach(method => {
+            const section = document.getElementById(`${method}-data`);
             if (section) section.style.display = 'none';
           });
           
-          // Mostrar la sección correspondiente
-          if (sections[this.value]) {
-            sections[this.value].style.display = 'block';
-          }
+          const section = document.getElementById(`${this.value}-data`);
+          if (section) section.style.display = 'block';
           
-          // Habilitar/deshabilitar campos según selección
-          const allInputs = document.querySelectorAll('#tarjeta-data input, #paypal-data input, #transferencia-data input');
-          allInputs.forEach(input => {
-            input.disabled = true;
-            input.required = false;
-          });
+          // Habilitar/deshabilitar campos
+          document.querySelectorAll('#tarjeta-data input, #paypal-data input, #transferencia-data input')
+            .forEach(input => {
+              input.disabled = true;
+              input.required = false;
+            });
           
           if (this.value === 'tarjeta') {
             document.querySelectorAll('#tarjeta-data input').forEach(input => {
@@ -427,9 +455,7 @@
 
       // Inicializar con el método seleccionado por defecto
       const selectedMethod = document.querySelector('input[name="metodoDePago"]:checked');
-      if (selectedMethod) {
-        selectedMethod.dispatchEvent(new Event('change'));
-      }
+      if (selectedMethod) selectedMethod.dispatchEvent(new Event('change'));
 
       // Validación del formulario
       const form = document.getElementById('payment-form');
@@ -438,12 +464,10 @@
           event.preventDefault();
           event.stopPropagation();
         } else {
-          // Mostrar spinner de carga
           const submitBtn = document.getElementById('submit-btn');
           submitBtn.disabled = true;
-          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Procesando pago...';
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Procesando...';
         }
-        
         form.classList.add('was-validated');
       }, false);
 
@@ -460,11 +484,7 @@
             parts.push(match.substring(i, i+4));
           }
           
-          if (parts.length) {
-            e.target.value = parts.join(' ');
-          } else {
-            e.target.value = value;
-          }
+          e.target.value = parts.length ? parts.join(' ') : value;
         });
       }
 
@@ -480,21 +500,16 @@
         });
       }
 
-      // Selección de dirección
-      const addressCards = document.querySelectorAll('.address-card');
-      addressCards.forEach(card => {
-        card.addEventListener('click', function() {
-          // Remover clase selected de todas las cards
-          addressCards.forEach(c => c.classList.remove('selected'));
-          
-          // Agregar clase selected a la card clickeada
-          this.classList.add('selected');
-          
-          // Marcar el radio button correspondiente
-          const addressType = this.dataset.address;
-          document.getElementById(`${addressType}Direccion`).checked = true;
+      // Relación departamento-ciudad (ejemplo simplificado)
+      const departamentoSelect = document.getElementById('departamento');
+      const ciudadInput = document.getElementById('ciudad');
+      if (departamentoSelect && ciudadInput) {
+        departamentoSelect.addEventListener('change', function() {
+          ciudadInput.value = this.value === 'Lima' ? 'Lima' : 
+                            this.value === 'Arequipa' ? 'Arequipa' : 
+                            this.value === 'Cusco' ? 'Cusco' : '';
         });
-      });
+      }
     });
   </script>
 </body>

@@ -20,6 +20,11 @@ const itemOrdenSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  tamanio: {
+    type: String,
+    enum: ['pequeno', 'mediano', 'grande', null],
+    default: null
+  },
   subtotal: {
     type: Number,
     required: true,
@@ -56,7 +61,7 @@ const direccionSchema = new mongoose.Schema({
 const ordenSchema = new mongoose.Schema({
   usuarioId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario',
+    ref: 'User',
     required: true
   },
   items: [itemOrdenSchema],
@@ -76,6 +81,14 @@ const ordenSchema = new mongoose.Schema({
     enum: ['pendiente', 'procesando', 'enviado', 'completada', 'cancelada'],
     default: 'pendiente'
   },
+  numeroOrden: {
+    type: String,
+    unique: true
+  },
+  contadorUsuario: {  // Nuevo campo para el contador por usuario
+    type: Number,
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -86,9 +99,15 @@ const ordenSchema = new mongoose.Schema({
   }
 });
 
-ordenSchema.pre('save', function(next) {
+// Middleware para generar número de orden y contador antes de guardar
+ordenSchema.pre('save', async function(next) {
+  if (this.isNew) {
+    const ordenCount = await this.constructor.countDocuments({ usuarioId: this.usuarioId });
+    this.contadorUsuario = ordenCount + 1;
+    this.numeroOrden = `ORD-${this.usuarioId.toString().slice(-6)}-${Date.now().toString().slice(-4)}-${this.contadorUsuario}`;
+  }
   this.updatedAt = new Date();
   next();
 });
 
-module.exports = mongoose.model('Orden', ordenSchema, 'order');
+module.exports = mongoose.model('Orden', ordenSchema, 'orders');

@@ -1,5 +1,3 @@
-<%- include('partials/header') %>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -28,6 +26,7 @@
   </style>
 </head>
 <body>
+  <%- include('partials/header') %>
   <div class="container mt-4">
     <h1 class="mb-4">Nuestros Productos</h1>
 
@@ -51,7 +50,11 @@
               <div class="card-body">
                 <h5 class="card-title"><%= producto.nombre %></h5>
                 <p class="card-text"><%= producto.descripcion.substring(0, 100) %>...</p>
-                <p class="h5 text-primary">S/. <%= producto.precio ? producto.precio.toFixed(2) : '0.00' %></p>
+                <% if (producto.categoria === 'Bebidas' && producto.precios) { %>
+                  <p class="h5 text-primary">Desde: S/. <%= producto.precios.pequeno.toFixed(2) %></p>
+                <% } else { %>
+                  <p class="h5 text-primary">S/. <%= producto.precio ? producto.precio.toFixed(2) : '0.00' %></p>
+                <% } %>
                 <a href="productos/<%= producto._id %>" class="btn btn-primary">Ver detalles</a>
               </div>
             </div>

@@ -5,27 +5,39 @@ const Orden = require('../models/Orden');
 // Controlador para ver el carrito
 const verCarrito = async (req, res) => {
   try {
-    console.log('Usuario autentificado: ',req.user);
-    const usuarioId = req.session.user.id; // Ejemplo hardcodeado
+    const usuarioId = req.session.user.id;
     
-    console.log('Buscando carrito para usuario:', usuarioId);
     const carrito = await Carrito.findOne({ usuarioId }).populate('items.producto');
     
     if (!carrito) {
-      return res.render('carrito', { items: [], total: 0 });
+      return res.render('carrito', { 
+        items: [], 
+        total: 0,
+        title: 'Carrito de Compras'
+      });
     }
     
+    // Calcular total considerando precios por tamaño si es bebida
     const total = carrito.items.reduce((sum, item) => {
-      return sum + (item.producto.precio * item.cantidad);
+      const producto = item.producto;
+      let precio = producto.precio;
+      
+      if (producto.categoria === 'Bebidas' && item.tamanio && producto.precios) {
+        precio = producto.precios[item.tamanio] || producto.precio;
+      }
+      
+      return sum + (precio * item.cantidad);
     }, 0);
     
     res.render('carrito', { 
       items: carrito.items, 
-      total
+      total,
+      title: 'Carrito de Compras'
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error al obtener el carrito');
+    req.flash('error_msg', 'Error al obtener el carrito');
+    res.status(500).redirect('/');
   }
 };
 
@@ -73,67 +85,66 @@ const agregarProducto = async (req, res) => {
       return res.status(400).redirect('/');
     }
 
-    // 6. Buscar o crear carrito
+    // 6. Validar tamaño para bebidas
+    if (producto.categoria === 'Bebidas' && !tamanio) {
+      req.flash('error_msg', 'Debes seleccionar un tamaño para la bebida');
+      return res.status(400).redirect('/');
+    }
+
+    // 7. Buscar o crear carrito
     let carrito = await Carrito.findOne({ usuarioId: req.session.user.id });
     if (!carrito) {
-      console.log('Creando nuevo carrito para usuario:', req.session.user.id);
       carrito = new Carrito({
         usuarioId: req.session.user.id,
-        items: []
+        items: [],
+        total: 0
       });
     }
 
-    // 7. Buscar si el producto ya está en el carrito
+    // 8. Determinar el precio según el tamaño si es bebida
+    let precioUnitario = producto.precio;
+    if (producto.categoria === 'Bebidas' && tamanio && producto.precios) {
+      precioUnitario = producto.precios[tamanio] || producto.precio;
+    }
+
+    // 9. Buscar si el producto ya está en el carrito (mismo producto y mismo tamaño)
     const itemIndex = carrito.items.findIndex(
-      item => item.producto.toString() === productoId
+      item => item.producto.toString() === productoId && 
+             (item.tamanio === tamanio || (!item.tamanio && !tamanio))
     );
 
-    // 8. Actualizar o agregar el item
+    // 10. Actualizar o agregar el item
     if (itemIndex > -1) {
       // Producto ya existe en el carrito - actualizar cantidad
       carrito.items[itemIndex].cantidad += cantidadNum;
-      console.log('Actualizando cantidad en carrito existente', {
-        producto: producto.nombre,
-        nuevaCantidad: carrito.items[itemIndex].cantidad
-      });
     } else {
       // Producto nuevo en el carrito - agregar item
       const nuevoItem = {
         producto: productoId,
         cantidad: cantidadNum,
-        precioUnitario: producto.precio // Guardar precio actual como referencia
+        precioUnitario: precioUnitario
       };
 
-      // Solo agregar tamaño si es una bebida
-      if(producto.categoria == 'Bebidas' && tamanio){
-        nuevoItem.tamaio = tamanio;
+      if (producto.categoria === 'Bebidas' && tamanio) {
+        nuevoItem.tamanio = tamanio;
       }
       carrito.items.push(nuevoItem);
-      console.log('Agregando nuevo producto al carrito:', producto.nombre);
     }
 
-    // 9. Calcular total actualizado
+    // 11. Calcular total actualizado
     carrito.total = carrito.items.reduce((sum, item) => {
       return sum + (item.precioUnitario * item.cantidad);
     }, 0);
 
-    // 10. Guardar cambios
+    // 12. Guardar cambios
     await carrito.save();
-    console.log('Carrito guardado exitosamente:', carrito);
 
-    // 11. Respuesta exitosa
+    // 13. Respuesta exitosa
     req.flash('success_msg', `${producto.nombre} agregado al carrito (${cantidadNum} unidades)`);
     return res.redirect('/carrito');
 
   } catch (error) {
-    // 12. Manejo de errores
-    console.error('Error en agregarProducto:', {
-      error: error.message,
-      stack: error.stack,
-      body: req.body,
-      user: req.session.user
-    });
-
+    console.error('Error en agregarProducto:', error);
     req.flash('error_msg', 'Error al agregar producto al carrito. Por favor intente nuevamente.');
     return res.status(500).redirect('/');
   }
@@ -148,18 +159,36 @@ const eliminarProducto = async (req, res) => {
     const carrito = await Carrito.findOne({ usuarioId });
     
     if (!carrito) {
-      return res.status(404).json({ error: 'Carrito no encontrado' });
+      req.flash('error_msg', 'Carrito no encontrado');
+      return res.status(404).redirect('/carrito');
     }
+    
+    // Encontrar el item a eliminar para mostrar mensaje
+    const itemEliminado = carrito.items.find(item => item._id.toString() === itemId);
     
     carrito.items = carrito.items.filter(
       item => item._id.toString() !== itemId
     );
     
+    // Recalcular total
+    carrito.total = carrito.items.reduce((sum, item) => {
+      return sum + (item.precioUnitario * item.cantidad);
+    }, 0);
+    
     await carrito.save();
+    
+    if (itemEliminado) {
+      const producto = await Producto.findById(itemEliminado.producto);
+      if (producto) {
+        req.flash('success_msg', `${producto.nombre} eliminado del carrito`);
+      }
+    }
+    
     res.redirect('/carrito');
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al eliminar del carrito' });
+    req.flash('error_msg', 'Error al eliminar producto del carrito');
+    res.status(500).redirect('/carrito');
   }
 };
 
@@ -170,26 +199,53 @@ const actualizarCantidad = async (req, res) => {
     const { cantidad } = req.body;
     const usuarioId = req.session.user.id;
     
-    const carrito = await Carrito.findOne({ usuarioId });
+    const cantidadNum = parseInt(cantidad);
+    if (isNaN(cantidadNum) || cantidadNum < 1) {
+      req.flash('error', 'La cantidad debe ser un número positivo');
+      return res.redirect('/carrito');
+    }
+    
+    const carrito = await Carrito.findOne({ usuarioId }).populate('items.producto');
     
     if (!carrito) {
-      return res.status(404).json({ error: 'Carrito no encontrado' });
+      req.flash('error', 'Carrito no encontrado');
+      return res.redirect('/carrito');
     }
     
-    const item = carrito.items.find(
-      item => item._id.toString() === itemId
-    );
+    const item = carrito.items.find(item => item._id.toString() === itemId);
     
     if (!item) {
-      return res.status(404).json({ error: 'Ítem no encontrado en el carrito' });
+      req.flash('error', 'Ítem no encontrado en el carrito');
+      return res.redirect('/carrito');
     }
     
-    item.cantidad = parseInt(cantidad);
+    // Validar stock disponible
+    const producto = await Producto.findById(item.producto._id);
+    if (producto.stock < cantidadNum) {
+      req.flash('error', `No hay suficiente stock. Disponible: ${producto.stock}`);
+      return res.redirect('/carrito');
+    }
+    
+    item.cantidad = cantidadNum;
+    
+    // Recalcular total
+    carrito.total = carrito.items.reduce((sum, item) => {
+      const precio = item.producto.categoria === 'Bebidas' && item.tamanio && item.producto.precios 
+        ? item.producto.precios[item.tamanio] || item.producto.precio 
+        : item.producto.precio;
+      
+      return sum + (precio * item.cantidad);
+    }, 0);
+    
     await carrito.save();
+    
+    req.flash('success', 'Cantidad actualizada correctamente');
     res.redirect('/carrito');
+    
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al actualizar el carrito' });
+    req.flash('error', 'Error al actualizar el carrito');
+    res.redirect('/carrito');
   }
 };
 
@@ -200,11 +256,41 @@ const mostrarCheckout = async (req, res) => {
     const carrito = await Carrito.findOne({ usuarioId }).populate('items.producto');
     
     if (!carrito || carrito.items.length === 0) {
+      req.flash('error_msg', 'Tu carrito está vacío');
+      return res.redirect('/carrito');
+    }
+    
+    // Verificar stock antes de mostrar checkout
+    const itemsSinStock = [];
+    await Promise.all(carrito.items.map(async (item) => {
+      const producto = await Producto.findById(item.producto._id);
+      if (producto.stock < item.cantidad) {
+        itemsSinStock.push({
+          producto: producto.nombre,
+          stockDisponible: producto.stock,
+          cantidadSolicitada: item.cantidad
+        });
+      }
+    }));
+    
+    if (itemsSinStock.length > 0) {
+      const mensajeError = itemsSinStock.map(item => 
+        `${item.producto}: Stock disponible ${item.stockDisponible} (solicitado ${item.cantidadSolicitada})`
+      ).join(', ');
+      
+      req.flash('error_msg', `Stock insuficiente para: ${mensajeError}`);
       return res.redirect('/carrito');
     }
     
     const total = carrito.items.reduce((sum, item) => {
-      return sum + (item.producto.precio * item.cantidad);
+      const producto = item.producto;
+      let precio = producto.precio;
+      
+      if (producto.categoria === 'Bebidas' && item.tamanio && producto.precios) {
+        precio = producto.precios[item.tamanio] || producto.precio;
+      }
+      
+      return sum + (precio * item.cantidad);
     }, 0);
     
     res.render('checkout', { 
@@ -215,17 +301,30 @@ const mostrarCheckout = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error al mostrar checkout');
+    req.flash('error_msg', 'Error al mostrar checkout');
+    res.status(500).redirect('/carrito');
   }
 };
 
 // Controlador para mostrar orden confirmada
 const mostrarOrdenConfirmada = async (req, res) => {
   try {
-    const orden = await Orden.findById(req.params.id).populate('items.producto');
+    const orden = await Orden.findById(req.params.id)
+  .populate('items.producto')
+  .populate({
+    path: 'usuarioId',
+    model: 'User' // Especifica explícitamente el modelo correcto
+  });
     
     if (!orden) {
-      return res.status(404).send('Orden no encontrada');
+      req.flash('error_msg', 'Orden no encontrada');
+      return res.status(404).redirect('/');
+    }
+    
+    // Verificar que el usuario sea el dueño de la orden
+    if (orden.usuarioId._id.toString() !== req.session.user.id) {
+      req.flash('error_msg', 'No tienes permiso para ver esta orden');
+      return res.status(403).redirect('/');
     }
     
     res.render('ordenConfirmada', { 
@@ -234,7 +333,8 @@ const mostrarOrdenConfirmada = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error al mostrar orden');
+    req.flash('error_msg', 'Error al mostrar orden');
+    res.status(500).redirect('/');
   }
 };
 
@@ -242,29 +342,63 @@ const mostrarOrdenConfirmada = async (req, res) => {
 const crearOrden = async (req, res) => {
   try {
     const carritoId = req.params.id;
-    const { metodoDePago, direccion,
-      referencia, departamento,
-      ciudad, codigoPostal, telefono } = req.body;
-
+    const { metodoDePago, direccion, referencia, departamento, ciudad, codigoPostal, telefono } = req.body;
     const usuarioId = req.session.user.id;
 
-    const carrito = await Carrito.findById(carritoId).populate('items.producto');
+    const carrito = await Carrito.findOne({ _id: carritoId, usuarioId }).populate('items.producto');
     
     if (!carrito) {
-      return res.status(404).json({ error: 'Carrito no encontrado' });
+      req.flash('error_msg', 'Carrito no encontrado');
+      return res.status(404).redirect('/carrito');
     }
     
     if (carrito.items.length === 0) {
-      return res.status(400).json({ error: 'El carrito está vacío' });
+      req.flash('error_msg', 'El carrito está vacío');
+      return res.status(400).redirect('/carrito');
     }
 
+    // Verificar stock nuevamente antes de crear la orden
+    const itemsSinStock = [];
+    await Promise.all(carrito.items.map(async (item) => {
+      const producto = await Producto.findById(item.producto._id);
+      if (producto.stock < item.cantidad) {
+        itemsSinStock.push({
+          producto: producto.nombre,
+          stockDisponible: producto.stock,
+          cantidadSolicitada: item.cantidad
+        });
+      }
+    }));
+    
+    if (itemsSinStock.length > 0) {
+      const mensajeError = itemsSinStock.map(item => 
+        `${item.producto}: Stock disponible ${item.stockDisponible} (solicitado ${item.cantidadSolicitada})`
+      ).join(', ');
+      
+      req.flash('error_msg', `Stock insuficiente para: ${mensajeError}`);
+      return res.redirect('/carrito');
+    }
+
+    // Obtener el contador de órdenes del usuario
+    const ordenCount = await Orden.countDocuments({ usuarioId });
+    const contadorUsuario = ordenCount + 1;
+
+    // Preparar items para la orden
     const itemsParaOrden = carrito.items.map(item => {
+      const producto = item.producto;
+      let precio = producto.precio;
+      
+      if (producto.categoria === 'Bebidas' && item.tamanio && producto.precios) {
+        precio = producto.precios[item.tamanio] || producto.precio;
+      }
+      
       return {
-        producto: item.producto._id,
-        nombreProducto: item.producto.nombre,
+        producto: producto._id,
+        nombreProducto: producto.nombre,
         cantidad: item.cantidad,
-        precioUnitario: item.producto.precio,
-        subtotal: item.producto.precio * item.cantidad
+        precioUnitario: precio,
+        tamanio: item.tamanio || null,
+        subtotal: precio * item.cantidad
       };
     });
 
@@ -274,35 +408,81 @@ const crearOrden = async (req, res) => {
       direccion,
       ciudad,
       departamento,
-      codigoPostal: codigoPostal,
+      codigoPostal,
       referencia: referencia || '',
       telefono
     };
 
+    // Crear la nueva orden con el contador
     const orden = new Orden({
       usuarioId,
       items: itemsParaOrden,
       total,
       metodoDePago,
       direccionEnvio,
+      contadorUsuario, // Añadimos el contador
       status: 'pendiente'
     });
 
-    await Promise.all(itemsParaOrden.map(async (item) => {
-      await Producto.findByIdAndUpdate(item.producto, {
-        $inc: { stock: -item.cantidad }
-      });
-    }));
+    // Actualizar stock de productos y guardar orden
+    await Promise.all([
+      ...itemsParaOrden.map(item => 
+        Producto.findByIdAndUpdate(item.producto, {
+          $inc: { stock: -item.cantidad }
+        })
+      ),
+      orden.save()
+    ]);
 
-    await orden.save();
-
+    // Vaciar carrito
     carrito.items = [];
+    carrito.total = 0;
     await carrito.save();
 
     res.redirect(`/carrito/orden-confirmada/${orden._id}`);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message || 'Error al crear la orden' });
+    console.error('Error al crear orden:', error);
+    req.flash('error_msg', 'Error al crear la orden. Por favor intente nuevamente.');
+    res.status(500).redirect('/carrito');
+  }
+};
+
+const cancelarOrden = async (req, res) => {
+  try {
+    const ordenId = req.params.id;
+    const usuarioId = req.session.user.id;
+
+    // Verificar que la orden pertenece al usuario
+    const orden = await Orden.findOne({ _id: ordenId, usuarioId }).populate('items.producto');
+    
+    if (!orden) {
+      req.flash('error_msg', 'Orden no encontrada o no tienes permiso para cancelarla');
+      return res.redirect('/carrito/mis-ordenes');
+    }
+
+    // Solo se pueden cancelar órdenes pendientes
+    if (orden.status !== 'pendiente') {
+      req.flash('error_msg', 'Solo se pueden cancelar órdenes con estado "pendiente"');
+      return res.redirect('/carrito/mis-ordenes');
+    }
+
+    // Devolver el stock a los productos
+    await Promise.all(orden.items.map(item => 
+      Producto.findByIdAndUpdate(item.producto, {
+        $inc: { stock: item.cantidad }
+      })
+    ));
+
+    // Actualizar el estado de la orden a "cancelada"
+    orden.status = 'cancelada';
+    await orden.save();
+
+    req.flash('success_msg', 'Orden cancelada correctamente');
+    res.redirect('/carrito/mis-ordenes');
+  } catch (error) {
+    console.error('Error al cancelar orden:', error);
+    req.flash('error_msg', 'Error al cancelar la orden');
+    res.status(500).redirect('/carrito/mis-ordenes');
   }
 };
 
@@ -321,7 +501,8 @@ const mostrarOrdenes = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error al obtener las órdenes');
+    req.flash('error_msg', 'Error al obtener las órdenes');
+    res.status(500).redirect('/');
   }
 };
 
@@ -333,5 +514,6 @@ module.exports = {
   mostrarCheckout,
   mostrarOrdenConfirmada,
   crearOrden,
+  cancelarOrden,
   mostrarOrdenes
 };

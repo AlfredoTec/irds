@@ -35,6 +35,26 @@
     .out-of-stock {
       color: #dc3545;
     }
+    .size-option {
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .size-option:hover {
+      border-color: #0d6efd;
+      background-color: #f8f9fa;
+    }
+    .size-option.selected {
+      border-color: #0d6efd;
+      background-color: #e7f1ff;
+    }
+    .size-price {
+      font-weight: bold;
+      color: #0d6efd;
+    }
   </style>
 </head>
 <body>
@@ -54,40 +74,74 @@
       <div class="col-md-6">
         <h1><%= producto.nombre %></h1>
         <p class="text-muted">Categoria: <%= producto.categoria %></p>
-        <h3 class="text-primary">S/. <%= producto.precio.toFixed(2) %></h3>
+        
+        <% if (producto.categoria === 'Bebidas') { %>
+          <h4 class="mb-3">Selecciona un tamaño:</h4>
+        <% } else { %>
+          <h3 class="text-primary">S/. <%= producto.precio.toFixed(2) %></h3>
+        <% } %>
+        
         <hr>
         <h4>Descripción</h4>
         <p><%= producto.descripcion %></p>
         <hr>
         
         <% if (success_msg) { %>
-          <div class="alert alert-danger">
+          <div class="alert alert-success">
             <%= success_msg %>
           </div>
         <% } %>
 
         <% if (error_msg) { %>
-          <div class="alert alert-success">
+          <div class="alert alert-danger">
             <%= error_msg %>
           </div>
         <% } %>
 
         <!-- Formulario para agregar al carrito -->
         <form action="/carrito/agregar" method="POST">
+          <input type="hidden" name="productoId" value="<%= producto._id %>">
+          
           <% if (producto.categoria === 'Bebidas') { %>
-            <div class="mb-3">
-              <label for="tamanio" class="form-label">Tamaño:</label>
-              <select class="form-select" id="tamanio" name="tamanio" required>
-                <option value="pequeno">Pequeño</option>
-                <option value="mediano" selected>Mediano</option>
-                <option value="grande">Grande</option>
-              </select>
+            <div class="mb-4">
+              <!-- Opciones de tamaño para bebidas -->
+              <div class="size-options">
+                <div class="size-option" data-size="pequeno" onclick="selectSize(this, 'pequeno')">
+                  <div class="d-flex justify-content-between">
+                    <span>Pequeño</span>
+                    <span class="size-price">S/. <%= producto.precios.pequeno.toFixed(2) %></span>
+                  </div>
+                  <input type="radio" name="tamanio" value="pequeno" class="d-none" required>
+                </div>
+                
+                <div class="size-option selected" data-size="mediano" onclick="selectSize(this, 'mediano')">
+                  <div class="d-flex justify-content-between">
+                    <span>Mediano</span>
+                    <span class="size-price">S/. <%= producto.precios.mediano.toFixed(2) %></span>
+                  </div>
+                  <input type="radio" name="tamanio" value="mediano" class="d-none" checked>
+                </div>
+                
+                <div class="size-option" data-size="grande" onclick="selectSize(this, 'grande')">
+                  <div class="d-flex justify-content-between">
+                    <span>Grande</span>
+                    <span class="size-price">S/. <%= producto.precios.grande.toFixed(2) %></span>
+                  </div>
+                  <input type="radio" name="tamanio" value="grande" class="d-none">
+                </div>
+              </div>
+              
+              <!-- Mostrar precio seleccionado -->
+              <div class="mb-3">
+                <h3 id="selected-price" class="text-primary">
+                  S/. <%= producto.precios.mediano.toFixed(2) %>
+                </h3>
+              </div>
             </div>
           <% } else { %>
             <input type="hidden" name="tamanio" value="unico">
           <% } %>
 
-          <input type="hidden" name="productoId" value="<%= producto._id %>">
           <div class="mb-4">
             <label for="quantity" class="form-label">Cantidad:</label>
             <div class="input-group quantity-selector">
@@ -149,6 +203,29 @@
         this.value = max;
       }
     });
+
+    // Función para seleccionar tamaño en bebidas
+    function selectSize(element, size) {
+      // Remover clase selected de todas las opciones
+      document.querySelectorAll('.size-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      
+      // Agregar clase selected a la opción clickeada
+      element.classList.add('selected');
+      
+      // Marcar el radio button correspondiente
+      document.querySelector(`input[name="tamanio"][value="${size}"]`).checked = true;
+      
+      // Actualizar precio mostrado
+      if (size === 'pequeno') {
+        document.getElementById('selected-price').textContent = 'S/. <%= producto.precios.pequeno.toFixed(2) %>';
+      } else if (size === 'mediano') {
+        document.getElementById('selected-price').textContent = 'S/. <%= producto.precios.mediano.toFixed(2) %>';
+      } else if (size === 'grande') {
+        document.getElementById('selected-price').textContent = 'S/. <%= producto.precios.grande.toFixed(2) %>';
+      }
+    }
   </script>
 </body>
 </html>

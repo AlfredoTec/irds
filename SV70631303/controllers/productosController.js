@@ -5,7 +5,7 @@ const productosController = {
   // Obtener conteo de items en el carrito
   getCartCount: async (req, res) => {
     try {
-      const usuarioId = req.user._id; // Ahora usa el usuario autenticado
+      const usuarioId = req.session.user.id; // Ahora usa el usuario autenticado
       const carrito = await Carrito.findOne({ usuarioId });
       
       const count = carrito ? carrito.items.reduce((sum, item) => sum + item.cantidad, 0) : 0;
@@ -54,28 +54,37 @@ const productosController = {
   },
 
   // Crear nuevo producto
-  createProduct: async (req, res) => {
-    try {
-      const { nombre, categoria, descripcion, precio, tamanio, stock } = req.body;
-      const imagen = req.file ? req.file.filename : 'default-product.jpg';
-      
-      const nuevoProducto = new Producto({
-        nombre,
-        categoria,
-        descripcion,
-        precio,
-        tamanio,
-        imagen,
-        stock
-      });
+createProduct: async (req, res) => {
+  try {
+    const { nombre, categoria, descripcion, precio, stock } = req.body;
+    const imagen = req.file ? req.file.filename : 'default-product.jpg';
+    
+    const productoData = {
+      nombre,
+      categoria,
+      descripcion,
+      imagen,
+      stock
+    };
 
-      await nuevoProducto.save();
-      res.redirect('/');
-    } catch (err) {
-      console.error(err);
-      res.status(500).send('Error al crear el producto');
+    if (categoria === 'Bebidas') {
+      productoData.precios = {
+        pequeno: parseFloat(req.body.precios.pequeno),
+        mediano: parseFloat(req.body.precios.mediano),
+        grande: parseFloat(req.body.precios.grande)
+      };
+    } else {
+      productoData.precio = parseFloat(precio);
     }
-  },
+
+    const nuevoProducto = new Producto(productoData);
+    await nuevoProducto.save();
+    res.redirect('/');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al crear el producto');
+  }
+},
 
   // Mostrar detalle de producto
   showProductDetail: async (req, res) => {

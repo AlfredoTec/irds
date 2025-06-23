@@ -15,19 +15,42 @@ const productoSchema = new mongoose.Schema({
   },
   precio: {
     type: Number,
-    required: true,
+    required: function() {
+      return this.categoria !== 'Bebidas';
+    },
     min: 0
   },
-  tamanio: {
-    type: String,
-    required: true
+  precios: {
+    pequeno: {
+      type: Number,
+      required: function() {
+        return this.categoria === 'Bebidas';
+      },
+      min: 0
+    },
+    mediano: {
+      type: Number,
+      required: function() {
+        return this.categoria === 'Bebidas';
+      },
+      min: 0
+    },
+    grande: {
+      type: Number,
+      required: function() {
+        return this.categoria === 'Bebidas';
+      },
+      min: 0
+    }
   },
   imagen: {
     type: String,
     default: 'default-product.jpg'
   },
   stock: {
-    type: Number
+    type: Number,
+    required: true,
+    min: 0
   }
 });
 
