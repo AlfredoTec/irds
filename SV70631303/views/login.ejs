@@ -1,23 +1,254 @@
 <%- include('partials/header') %>
 
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <h2 class="text-center mb-4">Iniciar Sesión</h2>
-    <form action="/login" method="POST">
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="email" name="email" required>
-      </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Contraseña</label>
-        <input type="password" class="form-control" id="password" name="password" required>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
-    </form>
-    <div class="mt-3 text-center">
-      <p>¿No tienes una cuenta? <a href="/register">Regístrate</a></p>
+<style>
+  @import url('https://fonts.cdnfonts.com/css/sodo-sans');
+
+  :root {
+    --coffee-dark: #4B382A;
+    --coffee-medium: #8B5A2B;
+    --coffee-light: #D2B48C;
+    --coffee-cream: #F5E8D0;
+    --coffee-accent: #A67C52;
+    --coffee-text: #3E2723;
+  }
+  
+  body {
+    background-color: var(--coffee-cream);
+    background-image: url('https://images.unsplash.com/photo-1445116572660-236099ec97a0?q=80&w=1000');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: 'Sodo Sans Regular', sans-serif;
+  }
+  
+  .login-container {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+    position: relative;
+  }
+  
+  .login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(75, 56, 42, 0.7);
+    z-index: 0;
+  }
+  
+  .login-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    z-index: 1;
+    background-color: var(--coffee-cream);
+    border: 1px solid var(--coffee-medium);
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+  }
+  
+  .login-header {
+    background: linear-gradient(135deg, var(--coffee-dark) 0%, var(--coffee-medium) 100%);
+    color: var(--coffee-cream);
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+  }
+  
+  .login-header h2 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    letter-spacing: -0.5px;
+  }
+  
+  .login-header p {
+    font-weight: 300;
+    opacity: 0.9;
+  }
+  
+  .login-body {
+    padding: 2rem;
+    background-color: white;
+  }
+  
+  .form-label {
+    font-weight: 500;
+    color: var(--coffee-text);
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.95rem;
+  }
+  
+  .form-control {
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid #e0d6cc;
+    transition: all 0.3s;
+    background-color: white;
+    width: 100%;
+    font-size: 1rem;
+  }
+  
+  .form-control:focus {
+    border-color: var(--coffee-accent);
+    box-shadow: 0 0 0 3px rgba(166, 124, 82, 0.1);
+    outline: none;
+  }
+  
+  .btn-login {
+    background: var(--coffee-dark);
+    border: none;
+    padding: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s;
+    color: white;
+    width: 100%;
+    font-size: 1rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  
+  .btn-login:hover {
+    background: var(--coffee-medium);
+    transform: translateY(-2px);
+  }
+  
+  .login-footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--coffee-text);
+    font-size: 0.9rem;
+    background-color: var(--coffee-cream);
+  }
+  
+  .login-footer a {
+    color: var(--coffee-medium);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  
+  .input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--coffee-medium);
+    z-index: 2;
+  }
+  
+  .input-field {
+    padding-left: 48px !important;
+  }
+  
+  .password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--coffee-medium);
+    z-index: 2;
+  }
+  
+  .divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: var(--coffee-medium);
+    font-size: 0.9rem;
+  }
+  
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e0d6cc;
+  }
+  
+  .divider::before {
+    margin-right: 1rem;
+  }
+  
+  .divider::after {
+    margin-left: 1rem;
+  }
+</style>
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Welcome to Coffee Vibes</h2>
+      <p>Sign in to your account</p>
+    </div>
+    
+    <div class="login-body">
+      <% if (error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-danger">
+          <%= error_msg %>
+        </div>
+      <% } %>
+      
+      <form action="/login" method="POST">
+        <div class="input-group">
+          <i class="fas fa-envelope input-icon"></i>
+          <input type="email" class="form-control input-field" id="email" name="email" placeholder="Email address" required>
+        </div>
+        
+        <div class="input-group">
+          <i class="fas fa-lock input-icon"></i>
+          <input type="password" class="form-control input-field" id="password" name="password" placeholder="Password" required>
+          <i class="far fa-eye password-toggle" id="togglePassword"></i>
+        </div>
+        
+        <div class="d-flex justify-content-between mb-3">
+          <a href="/forgot-password" style="color: var(--coffee-medium); font-size: 0.9rem; text-decoration: none;">
+            Forgot password?
+          </a>
+        </div>
+        
+        <button type="submit" class="btn btn-login mb-3">
+          Sign In
+        </button>
+      </form>
+    </div>
+    
+    <div class="login-footer">
+      Don't have an account? <a href="/register">Sign up</a>
     </div>
   </div>
 </div>
+
+<script>
+  // Toggle password visibility
+  const togglePassword = document.querySelector('#togglePassword');
+  const password = document.querySelector('#password');
+  
+  togglePassword.addEventListener('click', function() {
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    password.setAttribute('type', type);
+    this.classList.toggle('fa-eye-slash');
+  });
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Sodo Sans Font -->
+<link href="https://fonts.cdnfonts.com/css/sodo-sans" rel="stylesheet">
 
 <%- include('partials/footer') %>

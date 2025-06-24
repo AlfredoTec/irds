@@ -1,10 +1,27 @@
-    </div>
-    <footer class="mt-5 py-3 bg-light">
-      <div class="container text-center">
-        <p>&copy; 2025 Coffe Vibes</p>
-        <p>Developed by Alfredo Navarro</p>
-      </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
-</html>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* viewport height */
+  }
+  
+  .main-content {
+    flex: 1; /* Esto hace que el contenido principal ocupe todo el espacio disponible */
+  }
+  
+  footer {
+    margin-top: auto; /* Empuja el footer hacia abajo */
+  }
+</style>
+<footer class="py-3 bg-light mt-auto"> <!-- mt-auto ayuda a mantenerlo abajo -->
+  <div class="container text-center">
+    <p class="mb-1">&copy; 2025 Coffee Vibes</p>
+    <p class="mb-0">Developed by Alfredo Navarro</p>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
