@@ -103,6 +103,44 @@ createProduct: async (req, res) => {
   // Mostrar carrito
   showCart: (req, res) => {
     res.render('carrito');
+  },
+  
+  buscarProductos: async (req, res) => {
+    try {
+      const query = req.query.q; // Obtiene el término de búsqueda
+      const page = parseInt(req.query.page) || 1;
+      const limit = 10;
+      const skip = (page - 1) * limit;
+
+      // Búsqueda con expresión regular para coincidencias parciales
+      const productos = await Producto.find({
+        $or: [
+          { nombre: { $regex: query, $options: 'i' } }, // Búsqueda insensible a mayúsculas
+          { descripcion: { $regex: query, $options: 'i' } }
+        ]
+      })
+      .skip(skip)
+      .limit(limit);
+
+      const total = await Producto.countDocuments({
+        $or: [
+          { nombre: { $regex: query, $options: 'i' } },
+          { descripcion: { $regex: query, $options: 'i' } }
+        ]
+      });
+
+      res.render('resultadosBusqueda', {
+        productos,
+        query,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        title: `Resultados para "${query}"`
+      });
+    } catch (error) {
+      console.error(error);
+      req.flash('error_msg', 'Error al realizar la búsqueda');
+      res.redirect('/');
+    }
   }
 };
 

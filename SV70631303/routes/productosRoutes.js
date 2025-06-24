@@ -12,6 +12,7 @@ module.exports = (upload) => {
   router.get('/agregar-producto', isAuthenticated, productosController.showNewProductForm);
   router.post('/', isAuthenticated, upload.single('imagen'), productosController.createProduct);
   router.get('/productos/:id', isAuthenticated, productosController.showProductDetail);
+  router.get('/buscar', isAuthenticated, productosController.buscarProductos);
 
   return router;
 };

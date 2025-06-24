@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <%- include('partials/header') %>
+  <title><%= title %> - Mi Tienda</title>
+  <style>
+    .product-card {
+      margin-bottom: 20px;
+      height: 100%;
+    }
+    .product-img-container {
+      height: 200px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f8f9fa;
+    }
+    .product-img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .product-card {
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+    .search-highlight {
+      background-color: #fff3cd;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <%- include('partials/navbar') %>
+
+    <h2 class="mb-4">Resultados para "<%= query %>"</h2>
+    
+    <% if (productos.length === 0) { %>
+      <div class="alert alert-info">
+        No se encontraron productos que coincidan con tu búsqueda.
+      </div>
+    <% } else { %>
+      <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        <% productos.forEach(producto => { %>
+          <div class="col">
+            <div class="card h-100 product-card">
+              <img src="/uploads/<%= producto.imagen || 'default-product.jpg' %>" 
+                   class="card-img-top p-3" 
+                   alt="<%= producto.nombre %>"
+                   style="height: 200px; object-fit: contain;">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <%= producto.nombre %>
+                </h5>
+                <p class="card-text text-muted">
+                  <%= producto.descripcion.length > 100 ? 
+                      producto.descripcion.substring(0, 100) + '...' : 
+                      producto.descripcion %>
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="h5 mb-0">Desde S/ <%= producto.precios.pequeno.toFixed(2) %></span>
+                  <a href="/productos/<%= producto._id %>" class="btn btn-primary">
+                    Ver detalles
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+      
+      <!-- Paginación -->
+      <% if (totalPages > 1) { %>
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center">
+            <% if (currentPage > 1) { %>
+              <li class="page-item">
+                <a class="page-link" href="/buscar?q=<%= query %>&page=<%= currentPage-1 %>">Anterior</a>
+              </li>
+            <% } %>
+            
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a class="page-link" href="/buscar?q=<%= query %>&page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+            
+            <% if (currentPage < totalPages) { %>
+              <li class="page-item">
+                <a class="page-link" href="/buscar?q=<%= query %>&page=<%= currentPage+1 %>">Siguiente</a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
+      <% } %>
+    <% } %>
+  </div>
+  
+  <%- include('partials/footer') %>
+</body>
+</html>
