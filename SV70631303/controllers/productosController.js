@@ -25,7 +25,7 @@ const productosController = {
 
     try {
       const productos = await Producto.find()
-        .sort({ createdAt: -1 })
+        .sort({ categoria: 1, createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean();
@@ -33,7 +33,7 @@ const productosController = {
       const count = await Producto.countDocuments();
       const totalPages = Math.ceil(count / limit);
 
-      res.render('productos', {
+      res.render('home', {
         productos,
         currentPage: page,
         totalPages,
@@ -44,7 +44,7 @@ const productosController = {
       });
     } catch (err) {
       console.error(err);
-      res.render('productos', { productos: [] });
+      res.render('home', { productos: [] });
     }
   },
 

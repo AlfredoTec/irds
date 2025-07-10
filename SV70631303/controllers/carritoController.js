@@ -13,6 +13,8 @@ const verCarrito = async (req, res) => {
       return res.render('carrito', { 
         items: [], 
         total: 0,
+        descuento: 0,
+        totalConDescuento: 0,
         title: 'Carrito de Compras'
       });
     }
@@ -29,6 +31,9 @@ const verCarrito = async (req, res) => {
       return sum + (precio * item.cantidad);
     }, 0);
     
+    const descuento = total * 0.15;
+    const totalConDescuento = total - descuento;
+
     res.render('carrito', { 
       items: carrito.items, 
       total,
@@ -51,7 +56,7 @@ const agregarProducto = async (req, res) => {
   }
 
   // 2. Validación de datos de entrada
-  const { productoId, cantidad, tamanio } = req.body;
+  const { productoId, cantidad, tamanio, personalizacion } = req.body;
   if (!productoId || !cantidad) {
     console.error('Datos incompletos:', { productoId, cantidad });
     req.flash('error_msg', 'Datos del producto incompletos');
@@ -122,7 +127,8 @@ const agregarProducto = async (req, res) => {
       const nuevoItem = {
         producto: productoId,
         cantidad: cantidadNum,
-        precioUnitario: precioUnitario
+        precioUnitario: precioUnitario,
+        personalizacion: personalizacion
       };
 
       if (producto.categoria === 'Bebidas' && tamanio) {
@@ -252,7 +258,14 @@ const actualizarCantidad = async (req, res) => {
 // Controlador para mostrar checkout
 const mostrarCheckout = async (req, res) => {
   try {
+    if (!req.session.user) {
+      req.flash('error_msg', 'Debes iniciar sesión para realizar el checkout');
+      return res.redirect('/login');
+    }
+
     const usuarioId = req.session.user.id;
+    const esPremium = req.session.user.esPremium || false; // Obtener estado premium
+    
     const carrito = await Carrito.findOne({ usuarioId }).populate('items.producto');
     
     if (!carrito || carrito.items.length === 0) {
@@ -260,7 +273,7 @@ const mostrarCheckout = async (req, res) => {
       return res.redirect('/carrito');
     }
     
-    // Verificar stock antes de mostrar checkout
+    // Verificar stock
     const itemsSinStock = [];
     await Promise.all(carrito.items.map(async (item) => {
       const producto = await Producto.findById(item.producto._id);
@@ -277,12 +290,12 @@ const mostrarCheckout = async (req, res) => {
       const mensajeError = itemsSinStock.map(item => 
         `${item.producto}: Stock disponible ${item.stockDisponible} (solicitado ${item.cantidadSolicitada})`
       ).join(', ');
-      
       req.flash('error_msg', `Stock insuficiente para: ${mensajeError}`);
       return res.redirect('/carrito');
     }
     
-    const total = carrito.items.reduce((sum, item) => {
+    // Calcular totales
+    const subtotal = carrito.items.reduce((sum, item) => {
       const producto = item.producto;
       let precio = producto.precio;
       
@@ -292,11 +305,21 @@ const mostrarCheckout = async (req, res) => {
       
       return sum + (precio * item.cantidad);
     }, 0);
-    
+
+    const descuento = esPremium ? subtotal * 0.15 : 0;
+    const envio = esPremium ? 0 : 15;
+    const total = subtotal - descuento + envio;
+
     res.render('checkout', { 
+      user: {
+        ...req.session.user,
+        esPremium: esPremium // Asegurar que está presente
+      },
       carrito,
       items: carrito.items, 
       total,
+      descuento,
+      totalConDescuento: total,
       title: 'Checkout - Finalizar Compra'
     });
   } catch (error) {
@@ -313,7 +336,8 @@ const mostrarOrdenConfirmada = async (req, res) => {
   .populate('items.producto')
   .populate({
     path: 'usuarioId',
-    model: 'User' // Especifica explícitamente el modelo correcto
+    model: 'User', // Especifica explícitamente el modelo correcto
+    select: 'esPremium'
   });
     
     if (!orden) {
@@ -329,6 +353,10 @@ const mostrarOrdenConfirmada = async (req, res) => {
     
     res.render('ordenConfirmada', { 
       orden,
+      user: {
+        ...req.session.user,
+        esPremium: orden.usuarioId.esPremium || false
+      },
       title: 'Orden Confirmada'
     });
   } catch (error) {
@@ -344,6 +372,7 @@ const crearOrden = async (req, res) => {
     const carritoId = req.params.id;
     const { metodoDePago, direccion, referencia, departamento, ciudad, codigoPostal, telefono } = req.body;
     const usuarioId = req.session.user.id;
+    const esPremium = req.session.user.esPremium || false; // Verificar si es premium
 
     const carrito = await Carrito.findOne({ _id: carritoId, usuarioId }).populate('items.producto');
     
@@ -383,7 +412,23 @@ const crearOrden = async (req, res) => {
     const ordenCount = await Orden.countDocuments({ usuarioId });
     const contadorUsuario = ordenCount + 1;
 
-    // Preparar items para la orden
+    // Calcular totales con descuento si es premium
+    const subtotal = carrito.items.reduce((sum, item) => {
+      const producto = item.producto;
+      let precio = producto.precio;
+      
+      if (producto.categoria === 'Bebidas' && item.tamanio && producto.precios) {
+        precio = producto.precios[item.tamanio] || producto.precio;
+      }
+      
+      return sum + (precio * item.cantidad);
+    }, 0);
+
+    const descuento = esPremium ? subtotal * 0.15 : 0;
+    const costoEnvio = esPremium ? 0 : 5;
+    const total = subtotal - descuento + costoEnvio;
+
+    // Preparar items para la orden (incluyendo personalización)
     const itemsParaOrden = carrito.items.map(item => {
       const producto = item.producto;
       let precio = producto.precio;
@@ -397,12 +442,11 @@ const crearOrden = async (req, res) => {
         nombreProducto: producto.nombre,
         cantidad: item.cantidad,
         precioUnitario: precio,
-        tamanio: item.tamanio || null,
-        subtotal: precio * item.cantidad
+        tamanio: producto.categoria === 'Bebidas' ? item.tamanio : null,
+        subtotal: precio * item.cantidad,
+        personalizacion: item.personalizacion || ''
       };
     });
-
-    const total = itemsParaOrden.reduce((sum, item) => sum + item.subtotal, 0);
 
     const direccionEnvio = {
       direccion,
@@ -417,11 +461,15 @@ const crearOrden = async (req, res) => {
     const orden = new Orden({
       usuarioId,
       items: itemsParaOrden,
+      subtotal,
+      descuento,
+      costoEnvio,
       total,
       metodoDePago,
       direccionEnvio,
-      contadorUsuario, // Añadimos el contador
-      status: 'pendiente'
+      contadorUsuario,
+      status: 'pendiente',
+      esPremium: esPremium // Guardar si fue compra premium
     });
 
     // Actualizar stock de productos y guardar orden

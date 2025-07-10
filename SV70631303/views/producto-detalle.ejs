@@ -73,7 +73,6 @@
       </div>
       <div class="col-md-6">
         <h1><%= producto.nombre %></h1>
-        <p class="text-muted">Categoria: <%= producto.categoria %></p>
         
         <% if (producto.categoria === 'Bebidas') { %>
           <h4 class="mb-3">Selecciona un tamaño:</h4>
@@ -149,6 +148,7 @@
                     min="1" max="<%= producto.stock %>">
               <button type="button" class="btn btn-outline-secondary increment">+</button>
             </div>
+
             <% if(producto.stock > 0) { %>
               <% if(producto.stock > 10) { %>
                 <p class="stock-info in-stock">En stock (<%= producto.stock %> disponibles)</p>
@@ -158,6 +158,19 @@
             <% } else { %>
               <p class="stock-info out-of-stock">Agotado</p>
             <% } %>
+          </div>
+
+          <hr>
+          <div class="mb-4">
+            <label for="personalizacion" class="form-label fw-semibold">
+              Personalización del producto
+            </label>
+            <textarea 
+              name="personalizacion" 
+              id="personalizacion" 
+              class="form-control" 
+              rows="4" 
+              placeholder="Escribe aquí cómo te gustaría personalizar tu producto..."></textarea>
           </div>
 
           <% if(producto.stock > 0) { %>

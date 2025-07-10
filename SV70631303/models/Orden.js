@@ -22,13 +22,18 @@ const itemOrdenSchema = new mongoose.Schema({
   },
   tamanio: {
     type: String,
-    enum: ['pequeno', 'mediano', 'grande', null],
+    enum: ['pequeno', 'mediano', 'grande', 'unico', null],
     default: null
   },
   subtotal: {
     type: Number,
     required: true,
     min: 0
+  },
+  
+  personalizacion: {
+    type: String,
+    default: ''
   }
 });
 
@@ -65,11 +70,15 @@ const ordenSchema = new mongoose.Schema({
     required: true
   },
   items: [itemOrdenSchema],
+  subtotal: {type: Number, required: true},
+  descuento: {type: Number, default: 0},
+  costoEnvio: {type: Number, required: true},
   total: {
     type: Number,
     required: true,
     min: 0
   },
+  esPremium: {type: Boolean, default: false},
   metodoDePago: {
     type: String,
     enum: ['tarjeta', 'transferencia', 'efectivo', 'paypal'],
@@ -78,14 +87,14 @@ const ordenSchema = new mongoose.Schema({
   direccionEnvio: direccionSchema,
   status: {
     type: String,
-    enum: ['pendiente', 'procesando', 'enviado', 'completada', 'cancelada'],
+    enum: ['pendiente', 'procesando', 'completada', 'cancelada'],
     default: 'pendiente'
   },
   numeroOrden: {
     type: String,
     unique: true
   },
-  contadorUsuario: {  // Nuevo campo para el contador por usuario
+  contadorUsuario: {
     type: Number,
     required: true
   },

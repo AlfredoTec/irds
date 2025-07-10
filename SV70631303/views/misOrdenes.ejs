@@ -1,8 +1,8 @@
+<%- include('partials/header') %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <%- include('partials/header') %>
-  <title><%= title %> - Mi Tienda</title>
+  <title><%= title %></title>
   <style>
     .order-card {
       transition: all 0.3s ease;
@@ -58,7 +58,7 @@
                       </span>
                     </div>
                     <div>
-                      <h5 class="mb-0 h6">Orden #<%= orden._id.toString().substring(18, 24).toUpperCase() %></h5>
+                      <h5 class="mb-0 h6">Orden #<%= orden.contadorUsuario %></h5>
                       <small class="text-muted">Fecha: <%= orden.createdAt.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></small>
                     </div>
                   </div>
@@ -103,6 +103,13 @@
                                     </span>
                                   </small>
                                 <% } %>
+
+                                <% if (item.personalizacion) { %>
+                                  <div class="customization-text">
+                                    <strong>Personalización:</strong> <%= item.personalizacion %>
+                                  </div>
+                                <% } %>
+
                               </div>
                             </div>
                           </td>
@@ -119,7 +126,7 @@
                       </tr>
                       <tr>
                         <td colspan="3" class="text-end fw-bold">Envío:</td>
-                        <td class="text-end text-success">Gratis</td>
+                        <td class="text-end text-success">S/ <%= orden.costoEnvio.toFixed(2) %></td>
                       </tr>
                       <tr>
                         <td colspan="3" class="text-end fw-bold">Total:</td>

@@ -3,36 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="uploads/logo.png">
+  <link rel="icon" href="/uploads/icon.png" type="image/png">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* ESTILOS GENERALES DEL NAVBAR */
     .navbar {
       min-height: 90px;
       padding: 0.5rem 1rem;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    
+
     .navbar-brand {
       padding: 0;
       margin-right: 20px;
     }
-    
+
     .navbar-logo {
       height: 70px;
       width: auto;
       transition: all 0.3s ease;
     }
-    
+
     .navbar-logo:hover {
       transform: scale(1.05);
       opacity: 0.9;
     }
-    
-    /* ESTILOS DE BOTONES */
+
     .nav-btn {
       margin-right: 10px;
       border-radius: 20px;
@@ -41,80 +39,52 @@
       font-weight: 500;
       font-size: 0.95rem;
     }
-    
+
     .btn-home { background-color: #f8f9fa; color: #212529; }
     .btn-cart { background-color: #4e73df; color: white; }
     .btn-orders { background-color: #1cc88a; color: white; }
     .btn-sell { background-color: #f6c23e; color: #212529; font-weight: 600; }
     .btn-sell:hover { background-color: #f4b619; color: #212529; }
-    
+
     .navbar-text {
       color: #2e59d9;
       font-weight: 600;
       margin-right: 15px;
       font-size: 1rem;
     }
-    
+
     .logout-btn {
       border-radius: 20px;
       padding: 8px 16px;
     }
     
-    /* DISEÑO RESPONSIVE PARA MÓVILES */
-    @media (max-width: 991.98px) {
-      .navbar {
-        min-height: 80px;
-      }
-      
-      .navbar-logo {
-        height: 60px;
-      }
-      
-      /* Menú colapsable */
-      .navbar-collapse {
-        padding: 15px 0;
-        order: 3;
-        width: 100%;
-      }
-      
-      /* Saludo del usuario en móviles */
-      .user-greeting-mobile {
-        display: block;
-        width: 100%;
-        text-align: center;
-        padding: 10px 0;
-        margin-bottom: 10px;
-        border-bottom: 1px solid #eee;
-      }
-      
-      /* Contenedor de botones en móviles */
-      .mobile-menu .nav-buttons-container {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .nav-btn {
-        width: 100%;
-        margin: 5px 0;
-        text-align: center;
-      }
-      
-      /* Ocultar saludo en desktop */
-      .user-greeting-desktop {
-        display: none;
-      }
+    /* Estilos para el badge visual (sin funcionalidad real) */
+    .premium-badge {
+      background-color: #ffc107;
+      color: #212529;
+      border-radius: 12px;
+      padding: 3px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      animation: pulse 2s infinite;
     }
     
-    /* ESTILOS PARA ESCRITORIO */
-    @media (min-width: 992px) {
-      .user-greeting-mobile {
-        display: none !important;
-      }
-      
-      .user-greeting-desktop {
-        display: inline-block;
-      }
+    .premium-badge i {
+      margin-right: 4px;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .user-container {
+      display: flex;
+      align-items: center;
     }
   </style>
 </head>
@@ -123,31 +93,17 @@
     <div class="container">
       <!-- Logo -->
       <a class="navbar-brand" href="/">
-        <img src="uploads/icon.png" alt="Coffe Vibes Logo" class="navbar-logo">
+        <img src="/uploads/icon.png" alt="Logo" class="navbar-logo">
       </a>
-      
-      <!-- Botón hamburguesa - CORREGIDO -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
-              aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      
+
       <!-- Contenido del menú -->
-      <div class="collapse navbar-collapse" id="navbarContent">
-        <div class="navbar-nav ms-auto align-items-lg-center">
+      <div class="collapse navbar-collapse show" id="navbarContent">
+        <div class="navbar-nav ms-auto align-items-center">
           <% if (!user) { %>
             <a class="nav-link" href="/login">Login</a>
             <a class="nav-link" href="/register">Registro</a>
           <% } else { %>
-            <!-- Saludo para móviles -->
-            <div class="user-greeting-mobile">
-              <span class="navbar-text">
-                <i class="fas fa-user-circle"></i> Hola, <%= user.nombre %> <%= user.apellido %>
-              </span>
-            </div>
-            
-            <!-- Botones de navegación -->
-            <div class="nav-buttons-container d-flex flex-column flex-lg-row align-items-lg-center">
+            <div class="nav-buttons-container d-flex align-items-center">
               <a href="/" class="btn btn-home nav-btn">
                 <i class="fas fa-home"></i> Home
               </a>
@@ -157,14 +113,20 @@
               <a href="/carrito/mis-ordenes" class="btn btn-orders nav-btn">
                 <i class="fas fa-clipboard-list"></i> Mis Órdenes
               </a>
-              <a href="/agregar-producto" class="btn btn-sell nav-btn">
-                <i class="fas fa-plus-circle"></i> Vender
-              </a>
               
-              <!-- Saludo para desktop -->
-              <span class="navbar-text user-greeting-desktop">
-                <i class="fas fa-user-circle"></i> Hola, <%= user.nombre %> <%= user.apellido %>
-              </span>
+              <div class="user-container">
+                <span class="navbar-text">
+                  <a href="/configuracion" style="text-decoration: none; color: inherit;">
+                    <i class="fas fa-user-circle"></i> Hola, <%= user.nombre %> <%= user.apellido %>
+                  </a>
+                </span>
+                <% if(user && user.esPremium) { %>
+                  <!-- Badge visual fijo (sin lógica de suscripción) -->
+                  <span class="premium-badge" title="Usuario Premium">
+                    <i class="fas fa-crown"></i> PREMIUM
+                  </span>
+                <% } %>
+              </div>
               
               <a class="btn btn-outline-danger logout-btn" href="/logout">
                 <i class="fas fa-sign-out-alt"></i> Salir
@@ -176,27 +138,7 @@
     </div>
   </nav>
 
-  <!-- Bootstrap JS Bundle con Popper (OBLIGATORIO para el menú hamburguesa) -->
+  <!-- Bootstrap JS Bundle con Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- Script adicional para mejorar el comportamiento -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Cerrar el menú al hacer clic en un enlace (solo móviles)
-      const navbarCollapse = document.querySelector('.navbar-collapse');
-      const navLinks = document.querySelectorAll('.nav-link, .nav-btn, .logout-btn');
-      
-      navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-          if (window.innerWidth < 992) {
-            const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
-            if (bsCollapse) {
-              bsCollapse.hide();
-            }
-          }
-        });
-      });
-    });
-  </script>
 </body>
 </html>

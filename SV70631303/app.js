@@ -10,12 +10,13 @@ const multer = require('multer');
 const authRoutes = require('./routes/authRoutes');
 const productosRoutes = require('./routes/productosRoutes');
 const carritoRoutes = require('./routes/carritoRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Configuración de Express
 const app = express();
 
 // Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce')
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('Conectado a MongoDB'))
 .catch(err => console.error('Error de conexión a MongoDB:', err));
 
@@ -51,6 +52,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Archivos estáticos
+// En tu app.js o server.js
+app.use(express.static('public')); // Para servir archivos desde /public
+app.use('/uploads', express.static('uploads')); // Para servir archivos desde /uploads
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Variables globales para las vistas
@@ -65,6 +69,7 @@ app.use((req, res, next) => {
 app.use('/', authRoutes);
 app.use('/', productosRoutes(upload));
 app.use('/carrito', carritoRoutes());
+app.use('/', userRoutes());
 
 // Puerto
 const PORT = process.env.PORT || 3000;

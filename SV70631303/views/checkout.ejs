@@ -58,6 +58,44 @@
       width: 60px;
       text-align: center;
     }
+    /* Nuevos estilos para beneficios premium */
+    .premium-benefit {
+      background-color: #f8f5ec;
+      border-left: 4px solid #ffc107;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0 4px 4px 0;
+    }
+    .premium-badge {
+      background-color: #ffc107;
+      color: #212529;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+    .premium-badge i {
+      margin-right: 4px;
+      font-size: 0.7rem;
+    }
+    .discount-line {
+      text-decoration: line-through;
+      opacity: 0.7;
+      font-size: 0.9em;
+    }
+    .benefit-tag {
+      font-size: 0.7rem;
+      background-color: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 5px;
+    }
+    .premium-tag {
+      background-color: #fff3cd;
+      color: #856404;
+    }
   </style>
 </head>
 <body>
@@ -288,7 +326,12 @@
           
           <div class="d-grid mt-4">
             <button type="submit" class="btn btn-primary btn-lg py-3" id="submit-btn">
-              <i class="bi bi-lock-fill me-2"></i>Confirmar y pagar S/ <%= total.toFixed(2) %>
+              <i class="bi bi-lock-fill me-2"></i>Confirmar y pagar S/ 
+              <% if (user && user.esPremium) { %>
+                <%= totalConDescuento.toFixed(2) %>
+              <% } else { %>
+                <%= (total + 5).toFixed(2) %>
+              <% } %>
             </button>
           </div>
         </form>
@@ -323,6 +366,13 @@
                         <% } %>
                       </div>
                     </div>
+
+                    <% if (item.personalizacion) { %>
+                      <div class="customization-text">
+                        <strong>Personalización:</strong> <%= item.personalizacion %>
+                      </div>
+                    <% } %>
+
                     <div class="text-end">
                       <span class="fw-medium">S/ 
                         <% if (item.producto.categoria === 'Bebidas' && item.tamanio && item.producto.precios) { %>
@@ -344,29 +394,75 @@
               <% }); %>
             </div>
             
+            <!-- Sección de beneficios premium -->
+            <% if (user && user.esPremium) { %>
+              <div class="premium-benefit mb-3">
+                <div class="d-flex align-items-center mb-1">
+                  <span class="premium-badge me-2">
+                    <i class="fas fa-crown"></i> PREMIUM
+                  </span>
+                  <small class="text-muted">Beneficios activos</small>
+                </div>
+                <ul class="list-unstyled small mb-0">
+                  <li class="text-success"><i class="fas fa-check-circle me-1"></i> 15% de descuento aplicado</li>
+                  <li class="text-success"><i class="fas fa-check-circle me-1"></i> Envío gratis en todos tus pedidos</li>
+                </ul>
+              </div>
+            <% } %>
+            
             <div class="d-flex justify-content-between mb-2">
               <span>Subtotal:</span>
               <span>S/ <%= total.toFixed(2) %></span>
             </div>
+            
             <div class="d-flex justify-content-between mb-2">
               <span>Envío:</span>
-              <span class="text-success">Gratis</span>
+              <% if (user && user.esPremium) { %>
+                <span class="text-success">
+                  Gratis <span class="benefit-tag premium-tag">Premium</span>
+                </span>
+              <% } else { %>
+                <span>S/ 5.00</span>
+              <% } %>
             </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span>Descuento:</span>
-              <span>S/ 0.00</span>
-            </div>
+            
+            <% if (user && user.esPremium) { %>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Descuento (15%):</span>
+                <span class="text-danger">
+                  - S/ <%= descuento.toFixed(2) %> <span class="benefit-tag premium-tag">Premium</span>
+                </span>
+              </div>
+            <% } else { %>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Descuento:</span>
+                <span>S/ 0.00</span>
+              </div>
+            <% } %>
             
             <hr>
             <div class="d-flex justify-content-between fw-bold fs-5">
               <span>Total:</span>
-              <span>S/ <%= total.toFixed(2) %></span>
+              <% if (user && user.esPremium) { %>
+                <div>
+                  <div class="small text-muted discount-line">S/ <%= (total + 5).toFixed(2) %></div>
+                  <span class="text-success">S/ <%= totalConDescuento.toFixed(2) %></span>
+                </div>
+              <% } else { %>
+                <span>S/ <%= (total + 5).toFixed(2) %></span>
+              <% } %>
             </div>
             
-            <div class="alert alert-success mt-3 mb-0">
-              <i class="bi bi-check-circle me-2"></i>
-              <small>Tienes envío gratis porque tu pedido supera los S/ 100.00</small>
-            </div>
+            <% if (!user || !user.esPremium) { %>
+              <div class="alert alert-warning mt-3 small">
+                <i class="fas fa-crown me-1"></i> Hazte <a href="/suscripcion" class="alert-link">Premium</a> y obtén:
+                <ul class="mt-1 mb-0">
+                  <li>15% de descuento en todos tus pedidos</li>
+                  <li>Envío gratis permanente</li>
+                  <li>Acceso a ofertas exclusivas</li>
+                </ul>
+              </div>
+            <% } %>
           </div>
         </div>
       </div>
@@ -497,17 +593,6 @@
             value = value.substring(0, 2) + '/' + value.substring(2, 4);
           }
           e.target.value = value;
-        });
-      }
-
-      // Relación departamento-ciudad (ejemplo simplificado)
-      const departamentoSelect = document.getElementById('departamento');
-      const ciudadInput = document.getElementById('ciudad');
-      if (departamentoSelect && ciudadInput) {
-        departamentoSelect.addEventListener('change', function() {
-          ciudadInput.value = this.value === 'Lima' ? 'Lima' : 
-                            this.value === 'Arequipa' ? 'Arequipa' : 
-                            this.value === 'Cusco' ? 'Cusco' : '';
         });
       }
     });

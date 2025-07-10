@@ -19,13 +19,17 @@ const itemSchema = new mongoose.Schema({
   precioUnitario: {
     type: Number,
     required: true
+  },
+  personalizacion: {
+    type: String,
+    default: ''
   }
 });
 
 const carritoSchema = new mongoose.Schema({
   usuarioId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Asumiendo que tienes un modelo de Usuario
+    ref: 'User',
     required: true,
     unique: true
   },

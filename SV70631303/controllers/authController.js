@@ -1,6 +1,4 @@
-const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const Producto = require('../models/Producto');
 
 exports.getRegister = (req, res) => {
   res.render('register');
@@ -25,7 +23,8 @@ exports.postRegister = async (req, res) => {
       nombre,
       apellido,
       email,
-      passwordHash: password
+      passwordHash: password,
+      esPremium: false
     });
     
     await newUser.save();
@@ -63,7 +62,8 @@ exports.postLogin = async (req, res) => {
       id: user._id,
       nombre: user.nombre,
       apellido: user.apellido,
-      email: user.email
+      email: user.email,
+      esPremium: user.esPremium || false
     };
     
     req.flash('success_msg', 'Inicio de sesión exitoso');
@@ -78,37 +78,4 @@ exports.postLogin = async (req, res) => {
 exports.getLogout = (req, res) => {
   req.session.destroy();
   res.redirect('/login');
-};
-
-exports.getHome = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1; // Página actual (default: 1)
-    const limit = 9; // Productos por página
-    const skip = (page - 1) * limit;
-
-    // Obtener el total de productos y los productos paginados
-    const [productos, total] = await Promise.all([
-      Producto.find().skip(skip).limit(limit).lean(),
-      Producto.countDocuments()
-    ]);
-
-    const totalPages = Math.ceil(total / limit);
-    const hasNextPage = page < totalPages;
-    const hasPreviousPage = page > 1;
-
-    res.render('home', {
-      user: req.session.user,
-      productos,
-      currentPage: page,
-      totalPages,
-      hasNextPage,
-      hasPreviousPage,
-      nextPage: page + 1,
-      previousPage: page - 1
-    });
-  } catch (error) {
-    console.error(error);
-    req.flash('error_msg', 'Error al cargar los productos');
-    res.redirect('/');
-  }
 };

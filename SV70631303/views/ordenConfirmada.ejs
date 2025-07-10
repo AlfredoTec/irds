@@ -57,6 +57,20 @@
       font-size: 0.7rem;
       margin-left: 5px;
     }
+    .premium-badge {
+      background-color: #ffc107;
+      color: #212529;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+    .premium-badge i {
+      margin-right: 4px;
+      font-size: 0.7rem;
+    }
   </style>
 </head>
 <body>
@@ -76,6 +90,11 @@
               <i class="bi bi-check-circle-fill text-success order-status-icon"></i>
               <h3 class="mt-3">Tu orden ha sido confirmada</h3>
               <p class="lead">Hemos recibido tu pedido y lo estamos preparando</p>
+              <% if (orden.esPremium) { %>
+                <div class="d-inline-flex align-items-center premium-badge mt-2">
+                  <i class="fas fa-crown"></i> COMPRA PREMIUM
+                </div>
+              <% } %>
             </div>
             
             <div class="row mb-4">
@@ -197,6 +216,12 @@
                                     </span>
                                   </small>
                                 <% } %>
+
+                                <% if (item.personalizacion) { %>
+                                  <div class="customization-text">
+                                    <strong>Personalización:</strong> <%= item.personalizacion %>
+                                  </div>
+                                <% } %>
                               </div>
                             </div>
                           </td>
@@ -209,11 +234,19 @@
                     <tfoot>
                       <tr>
                         <td colspan="3" class="text-end fw-bold">Subtotal:</td>
-                        <td class="text-end">S/ <%= orden.total.toFixed(2) %></td>
+                        <td class="text-end">S/ <%= orden.subtotal.toFixed(2) %></td>
                       </tr>
+                      <% if (orden.descuento > 0) { %>
+                        <tr>
+                          <td colspan="3" class="text-end fw-bold">Descuento Premium (15%):</td>
+                          <td class="text-end text-danger">- S/ <%= orden.descuento.toFixed(2) %></td>
+                        </tr>
+                      <% } %>
                       <tr>
                         <td colspan="3" class="text-end fw-bold">Envío:</td>
-                        <td class="text-end text-success">Gratis</td>
+                        <td class="text-end <%= orden.costoEnvio === 0 ? 'text-success' : '' %>">
+                          <%= orden.costoEnvio === 0 ? 'Gratis' : `S/ ${orden.costoEnvio.toFixed(2)}` %>
+                        </td>
                       </tr>
                       <tr>
                         <td colspan="3" class="text-end fw-bold">Total:</td>
@@ -237,6 +270,12 @@
                     Tu orden ha sido completada. ¡Esperamos que disfrutes tus productos!
                   <% } else { %>
                     Estamos preparando tu pedido. Te notificaremos cuando sea enviado.
+                  <% } %>
+                  <% if (orden.esPremium) { %>
+                    <div class="mt-2">
+                      <i class="fas fa-crown text-warning me-2"></i> 
+                      <strong>Beneficio Premium:</strong> Aplicaste un 15% de descuento y envío gratis en esta compra.
+                    </div>
                   <% } %>
                   </p>
                 </div>

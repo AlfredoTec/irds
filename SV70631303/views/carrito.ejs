@@ -14,6 +14,16 @@
       display: inline-block;
       font-weight: 500;
     }
+    .customization-badge {
+      background-color: #1cc88a;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      margin-left: 5px;
+      display: inline-block;
+      font-weight: 500;
+    }
     .price-display {
       font-size: 1.1rem;
       color: #2e59d9;
@@ -23,6 +33,10 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
+      margin-bottom: 5px;
+    }
+    .product-details {
+      margin-top: 5px;
     }
     .btn-update {
       color: #4e73df;
@@ -37,6 +51,11 @@
     .btn-checkout {
       background-color: #2e59d9;
       font-weight: 600;
+    }
+    .customization-text {
+      font-size: 0.9rem;
+      color: #5a5c69;
+      margin-top: 3px;
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -77,8 +96,21 @@
                               'Grande' %>
                         </span>
                       <% } %>
+                      <% if (item.personalizacion) { %>
+                        <span class="customization-badge ms-2">
+                          Personalizado
+                        </span>
+                      <% } %>
                     </div>
+                    
                     <p class="text-muted small mb-2"><%= item.producto.descripcion %></p>
+                    
+                    <% if (item.personalizacion) { %>
+                      <div class="customization-text">
+                        <strong>Personalización:</strong> <%= item.personalizacion %>
+                      </div>
+                    <% } %>
+                    
                     <div class="price-display">
                       <% if (item.producto.categoria === 'Bebidas' && item.tamanio && item.producto.precios) { %>
                         <span>S/. <%= item.producto.precios[item.tamanio].toFixed(2) %></span>

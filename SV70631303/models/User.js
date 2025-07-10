@@ -21,8 +21,15 @@ const userSchema = new mongoose.Schema({
   passwordHash: {
     type: String,
     required: true
-  }
-}, {
+  },
+  esPremium: {
+    type: Boolean,
+    default: false
+  },
+  fechaInicioPremium: Date,
+  fechaFinPremium: Date
+},
+{
   timestamps: true
 });
 

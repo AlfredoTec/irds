@@ -45,7 +45,7 @@
         No se encontraron productos que coincidan con tu búsqueda.
       </div>
     <% } else { %>
-      <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+      <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 g-3">
         <% productos.forEach(producto => { %>
           <div class="col">
             <div class="card h-100 product-card">
@@ -63,7 +63,15 @@
                       producto.descripcion %>
                 </p>
                 <div class="d-flex justify-content-between align-items-center">
-                  <span class="h5 mb-0">Desde S/ <%= producto.precios.pequeno.toFixed(2) %></span>
+                  <span class="h5 mb-0">
+                    <% if (producto.precios && producto.precios.pequeno != null) { %>
+                      Desde S/ <%= producto.precios.pequeno.toFixed(2) %>
+                    <% } else if (producto.precio != null) { %>
+                      S/ <%= parseFloat(producto.precio).toFixed(2) %>
+                    <% } else { %>
+                      Precio no disponible
+                    <% } %>
+                  </span>
                   <a href="/productos/<%= producto._id %>" class="btn btn-primary">
                     Ver detalles
                   </a>
